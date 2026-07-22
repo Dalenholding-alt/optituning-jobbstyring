@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "optituning-jobbstyring",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-07-18",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "optituning-jobbstyring",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "preview_database_id": "optituning-local",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "APP_NAME": "Optituning Jobbstyring",
+    "AUTH_MODE": "cloudflare-access"
+  },
+  "preview_urls": false
+}

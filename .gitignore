@@ -1,0 +1,13 @@
+node_modules/
+.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
+*.log
+optituning-d1-backup*.sql
+*.sqlite
+*.sqlite3
+.DS_Store
+.vscode/
+.idea/
