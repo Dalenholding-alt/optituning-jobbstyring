@@ -1,0 +1,103 @@
+name: Publiser Optituning til Cloudflare
+
+on:
+  push:
+    branches:
+      - main
+      - optituning-jobbstyring
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: optituning-produksjon
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Kontroller og publiser
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      CI: "true"
+      WRANGLER_SEND_METRICS: "false"
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACCESS_TEAM_DOMAIN: ${{ secrets.CLOUDFLARE_ACCESS_TEAM_DOMAIN }}
+      ACCESS_POLICY_AUD: ${{ secrets.CLOUDFLARE_ACCESS_POLICY_AUD }}
+      ADMIN_EMAILS_VALUE: ${{ secrets.OPTITUNING_ADMIN_EMAILS }}
+
+    steps:
+      - name: Hent kildekoden
+        uses: actions/checkout@v4
+
+      - name: Sett opp Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Kontroller nødvendige GitHub-hemmeligheter
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${CLOUDFLARE_API_TOKEN}" ]]; then
+            echo "::error::GitHub secret CLOUDFLARE_API_TOKEN mangler."
+            exit 1
+          fi
+
+          if [[ -z "${CLOUDFLARE_ACCOUNT_ID}" ]]; then
+            echo "::error::GitHub secret CLOUDFLARE_ACCOUNT_ID mangler."
+            exit 1
+          fi
+
+          access_values=0
+          [[ -n "${ACCESS_TEAM_DOMAIN}" ]] && access_values=$((access_values + 1))
+          [[ -n "${ACCESS_POLICY_AUD}" ]] && access_values=$((access_values + 1))
+          [[ -n "${ADMIN_EMAILS_VALUE}" ]] && access_values=$((access_values + 1))
+
+          if [[ "${access_values}" -ne 0 && "${access_values}" -ne 3 ]]; then
+            echo "::error::Cloudflare Access er bare delvis konfigurert. Legg inn alle tre: CLOUDFLARE_ACCESS_TEAM_DOMAIN, CLOUDFLARE_ACCESS_POLICY_AUD og OPTITUNING_ADMIN_EMAILS."
+            exit 1
+          fi
+
+      - name: Installer avhengigheter
+        run: npm ci
+
+      - name: Kontroller JavaScript og konfigurasjon
+        run: npm run check
+
+      - name: Opprett database, kjør migreringer og publiser
+        run: npm run publish
+
+      - name: Legg inn Cloudflare Access-hemmeligheter
+        if: ${{ env.ACCESS_TEAM_DOMAIN != '' && env.ACCESS_POLICY_AUD != '' && env.ADMIN_EMAILS_VALUE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "${ACCESS_TEAM_DOMAIN}" | npx wrangler secret put TEAM_DOMAIN
+          printf '%s' "${ACCESS_POLICY_AUD}" | npx wrangler secret put POLICY_AUD
+          printf '%s' "${ADMIN_EMAILS_VALUE}" | npx wrangler secret put ADMIN_EMAILS
+
+      - name: Oppsummer publiseringen
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Optituning Jobbstyring"
+            echo
+            if [[ "${{ job.status }}" == "success" ]]; then
+              echo "Publisering og databasesjekk ble fullført."
+            else
+              echo "Publiseringen feilet. Se steget som er markert med rødt over."
+            fi
+            echo
+            if [[ -z "${ACCESS_TEAM_DOMAIN}" ]]; then
+              echo "> Appen er publisert i låst modus. Aktiver Cloudflare Access og legg inn Access-hemmelighetene før kundeopplysninger tas i bruk."
+            else
+              echo "Cloudflare Access-verdiene ble synkronisert fra GitHub Secrets."
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
