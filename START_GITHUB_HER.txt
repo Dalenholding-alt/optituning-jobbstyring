@@ -1,0 +1,23 @@
+OPTITUNING JOBBSTYRING – GITHUB
+================================
+
+1. Opprett privat repository på GitHub-kontoen Dalenholding-alt.
+   Navn: optituning-jobbstyring
+
+2. Pakk ut ZIP-filen og last opp INNHOLDET i mappen til repositoryet.
+
+3. Legg inn disse GitHub Secrets:
+   CLOUDFLARE_API_TOKEN
+   CLOUDFLARE_ACCOUNT_ID
+
+4. Kjør workflowen:
+   Actions -> Publiser Optituning til Cloudflare -> Run workflow
+
+5. Aktiver Cloudflare Access på workers.dev-adressen.
+
+6. Legg inn disse GitHub Secrets og kjør workflowen på nytt:
+   CLOUDFLARE_ACCESS_TEAM_DOMAIN
+   CLOUDFLARE_ACCESS_POLICY_AUD
+   OPTITUNING_ADMIN_EMAILS
+
+Detaljert veiledning: GITHUB_PUBLISERING.md

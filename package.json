@@ -1,0 +1,35 @@
+{
+  "name": "optituning-jobbstyring-cloudflare",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobilvennlig jobbstyring for Optituning på Cloudflare Workers og D1",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "wrangler deploy",
+    "publish": "node scripts/publish.mjs",
+    "check": "node --check src/worker.js && node --check public/app.js && node --check scripts/publish.mjs",
+    "db:backup": "wrangler d1 export optituning-jobbstyring --remote --output=optituning-d1-backup.sql"
+  },
+  "dependencies": {
+    "jose": "^6.1.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.112.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "cloudflare": {
+    "bindings": {
+      "TEAM_DOMAIN": {
+        "description": "Cloudflare Access team domain, for eksempel https://firma.cloudflareaccess.com"
+      },
+      "POLICY_AUD": {
+        "description": "AUD-taggen fra Cloudflare Access-applikasjonen"
+      }
+    }
+  }
+}

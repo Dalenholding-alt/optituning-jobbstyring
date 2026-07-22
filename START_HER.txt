@@ -1,0 +1,23 @@
+OPTITUNING JOBBSTYRING – PUBLISERING
+===================================
+
+WINDOWS
+1. Pakk ut ZIP-filen.
+2. Dobbeltklikk PUBLISER_WINDOWS.bat.
+3. Logg inn hos Cloudflare.
+4. Vent til publiseringsskriptet er ferdig.
+5. Aktiver Cloudflare Access som beskrevet i README.md.
+6. Sett TEAM_DOMAIN og POLICY_AUD med kommandoene som vises.
+
+MAC/LINUX
+1. Pakk ut ZIP-filen.
+2. Åpne Terminal i mappen.
+3. Kjør: ./publiser_mac_linux.sh
+4. Aktiver Cloudflare Access som beskrevet i README.md.
+
+VIKTIG
+Appen er bevisst låst etter første publisering. Den åpnes først når
+Cloudflare Access og de to verdiene TEAM_DOMAIN/POLICY_AUD er satt.
+Dette hindrer at kunde- og fakturadata blir offentlig tilgjengelig.
+
+Full veiledning: README.md

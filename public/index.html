@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101927">
+  <meta name="description" content="Mobilvennlig ukeplan og jobbstyring for Optituning">
+  <title>Optituning Ukeplan</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand-wrap" href="#top" aria-label="Optituning ukeplan">
+          <div class="brand-mark" aria-hidden="true">O</div>
+          <div class="brand-copy">
+            <div class="brand">OPTITUNING</div>
+            <div class="brand-subtitle">Feltstyring</div>
+          </div>
+        </a>
+
+        <nav class="primary-nav" aria-label="Hovedmeny">
+          <button class="nav-button active" id="navWeekBtn" type="button"><span aria-hidden="true">▣</span> Ukeplan</button>
+          <button class="nav-button" id="navAlertsBtn" type="button"><span aria-hidden="true">▤</span> Fakturaoppfølging</button>
+          <button class="nav-button" id="dataMenuBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span aria-hidden="true">⚙</span> Data</button>
+        </nav>
+
+        <div class="top-actions">
+          <span class="role-pill" id="currentUser"><span class="role-dot"></span> Sikker tilgang</span>
+          <button class="button button-primary" id="newJobBtn" type="button">+ Ny jobb</button>
+        </div>
+      </div>
+
+      <div class="data-menu" id="dataMenu" hidden>
+        <button type="button" id="printWeekBtn">Skriv ut ukeplan</button>
+        <button type="button" id="exportBtn">Eksporter sikkerhetskopi</button>
+        <label class="file-menu-item" data-admin-only>
+          Importer sikkerhetskopi
+          <input type="file" id="importInput" accept="application/json" hidden>
+        </label>
+        <button type="button" id="demoBtn" data-admin-only>Legg inn eksempeljobber</button>
+        <button type="button" class="danger-text" id="clearBtn" data-admin-only>Slett alle jobber</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="page-heading">
+        <div>
+          <p class="page-kicker">Planlegging, feltarbeid og fakturaflyt</p>
+          <h1>Ukesplan</h1>
+        </div>
+        <div class="connection-status" id="connectionStatus"><span></span> Tilkoblet</div>
+      </section>
+
+      <section class="week-control panel" aria-label="Velg uke">
+        <button class="week-arrow" id="prevWeekBtn" type="button" aria-label="Forrige uke">‹</button>
+        <div class="week-copy">
+          <strong id="weekNumber">Uke</strong>
+          <span id="weekTitle">Denne uken</span>
+        </div>
+        <button class="week-arrow" id="nextWeekBtn" type="button" aria-label="Neste uke">›</button>
+        <button class="button button-soft today-button" id="todayBtn" type="button">I dag</button>
+      </section>
+
+      <section class="workflow-strip" aria-label="Slik brukes planen">
+        <article class="workflow-card">
+          <span class="step-number">1</span>
+          <div>
+            <strong>Alle ser sin egen uke</strong>
+            <p>Jobber, kundeinfo, lokasjon og betalingsmåte ligger samlet på mobilen.</p>
+          </div>
+        </article>
+        <article class="workflow-card">
+          <span class="step-number">2</span>
+          <div>
+            <strong>Planlegger fordeler jobbene</strong>
+            <p>Henrik kan fylle ledig kapasitet, åpne ruter og følge opp faktura samme dag.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="stats-strip" aria-label="Status for uken">
+        <article class="metric-card metric-available">
+          <span class="metric-icon" aria-hidden="true">✓</span>
+          <div><strong id="availableDaysStat">0</strong><span>Ledige arbeidsdager</span></div>
+        </article>
+        <article class="metric-card metric-planned">
+          <span class="metric-icon" aria-hidden="true">●●</span>
+          <div><strong id="plannedDaysStat">0</strong><span>Dager med jobber</span></div>
+        </article>
+        <article class="metric-card metric-jobs">
+          <span class="metric-icon" aria-hidden="true">▣</span>
+          <div><strong id="weekJobsStat">0</strong><span>Jobber denne uken</span></div>
+        </article>
+        <article class="metric-card metric-alert">
+          <span class="metric-icon" aria-hidden="true">!</span>
+          <div><strong id="invoiceAlertStat">0</strong><span>Fakturavarsler</span></div>
+        </article>
+      </section>
+
+      <section class="panel schedule-panel" id="scheduleSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Tilgjengelighet og bemanning</p>
+            <h2>Ansatte og jobber</h2>
+          </div>
+          <div class="section-tools">
+            <div class="employee-filters" id="employeeFilters" role="tablist" aria-label="Filtrer på ansatt"></div>
+          </div>
+        </div>
+
+        <div class="schedule-scroll" aria-label="Ukeplan per ansatt">
+          <div class="schedule-grid" id="weekGrid"></div>
+        </div>
+
+        <div class="schedule-footer">
+          <span id="weekPlanSummary">0 av 20 arbeidsdager planlagt</span>
+          <span class="footer-hint">Trykk på en dag for å se alle jobbene. Endringer lagres med én gang.</span>
+        </div>
+      </section>
+
+      <section class="panel alerts-panel" id="alertsSection">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Oppfølging</p>
+            <h2>Faktura må sendes</h2>
+          </div>
+          <button class="button button-soft button-small" id="notificationBtn" type="button">Aktiver varsler</button>
+        </div>
+        <div id="alertsList" class="alerts-list"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Optituning Ukeplan</span>
+      <span>Felles oversikt for Steffen, Henrik, Sæter og Nyansatt 1</span>
+    </footer>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Hurtigvalg">
+    <button type="button" id="mobileWeekBtn"><span>▣</span>Ukeplan</button>
+    <button type="button" id="mobileAlertsBtn"><span>!</span>Varsler</button>
+    <button type="button" id="mobileNewBtn" class="mobile-new"><span>+</span>Ny jobb</button>
+  </nav>
+
+  <dialog class="day-dialog" id="dayDialog">
+    <div class="day-dialog-shell">
+      <div class="dialog-header">
+        <div>
+          <p class="section-kicker">Dagsplan</p>
+          <h2 id="dayDialogTitle">Ansatt og dato</h2>
+          <p class="dialog-subtitle" id="dayDialogSummary"></p>
+        </div>
+        <button class="icon-button" id="closeDayDialogBtn" aria-label="Lukk" type="button">×</button>
+      </div>
+      <div class="day-dialog-toolbar">
+        <button class="button button-soft" id="dayRouteBtn" type="button">Åpne rute</button>
+        <button class="button button-primary" id="dayDialogAddBtn" type="button">+ Legg til jobb</button>
+      </div>
+      <div class="day-job-list" id="dayDialogList"></div>
+    </div>
+  </dialog>
+
+  <dialog class="job-dialog" id="jobDialog">
+    <form method="dialog" id="jobForm" novalidate>
+      <div class="dialog-header">
+        <div>
+          <p class="section-kicker">Jobbkort</p>
+          <h2 id="dialogTitle">Ny jobb</h2>
+        </div>
+        <button class="icon-button" id="closeDialogBtn" value="cancel" aria-label="Lukk" type="button">×</button>
+      </div>
+
+      <input type="hidden" id="jobId" name="id">
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
+      <input type="hidden" id="locationCapturedAt" name="locationCapturedAt">
+
+      <div class="form-sections">
+        <section class="form-section">
+          <h3>Planlegging</h3>
+          <div class="form-grid cols-4">
+            <label>
+              <span>Ansatt *</span>
+              <select id="employee" name="employee" required></select>
+            </label>
+            <label>
+              <span>Dato *</span>
+              <input type="date" id="jobDate" name="date" required>
+            </label>
+            <label>
+              <span>Starttid</span>
+              <input type="time" id="startTime" name="startTime" value="08:00">
+            </label>
+            <label>
+              <span>Varighet</span>
+              <select id="durationMins" name="durationMins">
+                <option value="30">30 min</option>
+                <option value="60">1 time</option>
+                <option value="90" selected>1,5 time</option>
+                <option value="120">2 timer</option>
+                <option value="180">3 timer</option>
+                <option value="240">4 timer</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-grid cols-2">
+            <label>
+              <span>Status</span>
+              <select id="status" name="status">
+                <option value="planned">Planlagt</option>
+                <option value="in_progress">Pågår</option>
+                <option value="completed">Ferdig</option>
+                <option value="cancelled">Avlyst</option>
+              </select>
+            </label>
+            <label>
+              <span>Type jobb</span>
+              <input type="text" id="jobType" name="jobType" placeholder="F.eks. tuning, diagnose eller filarbeid">
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>Kunde og fakturainfo</h3>
+          <div class="form-grid cols-2">
+            <label>
+              <span>Kundenavn / firmanavn *</span>
+              <input type="text" id="customerName" name="customerName" required autocomplete="organization">
+            </label>
+            <label>
+              <span>Kontaktperson</span>
+              <input type="text" id="contactPerson" name="contactPerson" autocomplete="name">
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input type="tel" id="phone" name="phone" autocomplete="tel">
+            </label>
+            <label>
+              <span>E-post</span>
+              <input type="email" id="email" name="email" autocomplete="email">
+            </label>
+            <label>
+              <span>Organisasjonsnummer</span>
+              <input type="text" id="orgNo" name="orgNo" inputmode="numeric">
+            </label>
+            <label>
+              <span>Fakturareferanse / PO</span>
+              <input type="text" id="invoiceReference" name="invoiceReference">
+            </label>
+          </div>
+          <label>
+            <span>Jobbadresse *</span>
+            <input type="text" id="address" name="address" autocomplete="street-address" placeholder="Adresse eller bruk geotag under">
+          </label>
+          <div class="geo-row">
+            <button class="button button-soft" id="geoBtn" type="button">⌖ Bruk min posisjon</button>
+            <span id="geoStatus" class="geo-status">Ingen geotag registrert</span>
+            <a id="mapLink" class="map-link" href="#" target="_blank" rel="noopener" hidden>Åpne i kart</a>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>Kjøretøy og jobbdetaljer</h3>
+          <div class="form-grid cols-2">
+            <label>
+              <span>Kjøretøy / maskin</span>
+              <input type="text" id="vehicleInfo" name="vehicleInfo" placeholder="F.eks. Volvo FH16, BMW 530d eller gravemaskin">
+            </label>
+            <label>
+              <span>Reg.nr. / serienummer</span>
+              <input type="text" id="regNo" name="regNo">
+            </label>
+          </div>
+          <label>
+            <span>Arbeidsbeskrivelse</span>
+            <textarea id="description" name="description" rows="3" placeholder="Hva skal gjøres, filer som trengs og avtaler med kunden"></textarea>
+          </label>
+          <label>
+            <span>Interne notater</span>
+            <textarea id="notes" name="notes" rows="2" placeholder="Kun til intern oppfølging"></textarea>
+          </label>
+        </section>
+
+        <section class="form-section payment-section">
+          <h3>Betaling</h3>
+          <div class="form-grid cols-2">
+            <label>
+              <span>Betalingsmåte</span>
+              <select id="paymentMethod" name="paymentMethod">
+                <option value="unknown">Ikke avklart</option>
+                <option value="card">Kort</option>
+                <option value="invoice">Faktura</option>
+              </select>
+            </label>
+            <label id="invoiceEmailLabel" hidden>
+              <span>Faktura-e-post</span>
+              <input type="email" id="invoiceEmail" name="invoiceEmail">
+            </label>
+          </div>
+          <div class="payment-checks">
+            <label class="check-row" id="cardPaidRow" hidden>
+              <input type="checkbox" id="cardPaid" name="cardPaid">
+              <span><strong>Kortbetaling registrert</strong><small>Marker når betalingen er gjennomført</small></span>
+            </label>
+            <label class="check-row" id="invoiceSentRow" hidden>
+              <input type="checkbox" id="invoiceSent" name="invoiceSent">
+              <span><strong>Faktura er sendt</strong><small>Hvis denne ikke markeres innen 7 dager, vises varsel</small></span>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <div class="form-error" id="formError" role="alert" hidden></div>
+
+      <div class="dialog-actions">
+        <button class="button button-danger" id="deleteJobBtn" type="button" hidden>Slett jobb</button>
+        <span class="dialog-spacer"></span>
+        <button class="button button-ghost-light" id="cancelDialogBtn" type="button">Avbryt</button>
+        <button class="button button-primary" id="saveJobBtn" type="submit">Lagre jobb</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

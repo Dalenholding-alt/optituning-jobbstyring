@@ -1,0 +1,5 @@
+# Lokal utvikling hopper automatisk over Cloudflare Access på localhost.
+# Verdiene under trengs bare ved testing av Access-validering lokalt.
+TEAM_DOMAIN=https://ditt-team.cloudflareaccess.com
+POLICY_AUD=lim-inn-aud-taggen-her
+ADMIN_EMAILS=henrik@eksempel.no,eier@eksempel.no

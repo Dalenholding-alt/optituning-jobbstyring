@@ -1,0 +1,37 @@
+OPTITUNING JOBBSTYRING - PUBLISER MED GITHUB DESKTOP
+
+GitHub-kontoen som skal brukes:
+- Brukernavn: Dalenholding-alt
+- E-post knyttet til kontoen: Dalenholding@outlook.com
+
+VIKTIG
+- Du skal ikke laste opp ZIP-filen direkte til GitHub.
+- Pakk den ut først, og velg mappen optituning-jobbstyring i GitHub Desktop.
+- Ikke send passord eller tofaktorkode til andre.
+
+STEG 1 - LOGG INN I GITHUB DESKTOP
+1. Apne GitHub Desktop.
+2. Velg File -> Options -> Accounts.
+3. Trykk Sign in to GitHub.com.
+4. Trykk Continue with browser.
+5. Logg inn i nettleseren og kontroller at kontoen er Dalenholding-alt.
+
+STEG 2 - LEGG TIL DEN FERDIGE MAPPEN
+1. Pakk ut ZIP-filen du fikk fra ChatGPT.
+2. I GitHub Desktop: File -> Add local repository.
+3. Trykk Choose og velg mappen optituning-jobbstyring.
+4. Trykk Add repository.
+
+STEG 3 - PUBLISER
+1. Trykk Publish repository.
+2. Name: optituning-jobbstyring
+3. Description: Mobilvennlig jobbstyring for Optituning
+4. La Keep this code private vaere krysset av.
+5. Organization: None, slik at repositoryet legges pa Dalenholding-alt.
+6. Trykk Publish repository.
+
+NAR DET ER FERDIG
+Repositoryet skal hete:
+Dalenholding-alt/optituning-jobbstyring
+
+GitHub Actions vil trenge Cloudflare-hemmeligheter for a publisere nettsiden. Selve GitHub-repositoryet kan publiseres forst. Deretter kan Cloudflare kobles til i neste steg.
