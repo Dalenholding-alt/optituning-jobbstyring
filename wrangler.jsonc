@@ -17,7 +17,7 @@
     {
       "binding": "DB",
       "database_name": "optituning-jobbstyring",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "fbaa7f8c-b4b9-4f00-a850-38ee5c2303cc",
       "preview_database_id": "optituning-local",
       "migrations_dir": "migrations"
     }
