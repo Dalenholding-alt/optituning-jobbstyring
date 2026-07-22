@@ -1,16 +1,15 @@
 name: Klargjor Optituning-repository
 
 on:
-  push:
-    branches:
-      - optituning-jobbstyring
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: klargjor-optituning-repository
+  group: klargjor-optituning-repository-${{ github.event.pull_request.number || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -18,12 +17,14 @@ jobs:
     name: Pakk ut appfilene
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      TARGET_BRANCH: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Hent repository
         uses: actions/checkout@v4
         with:
-          ref: optituning-jobbstyring
+          ref: ${{ env.TARGET_BRANCH }}
           fetch-depth: 0
 
       - name: Pakk ut og flytt appen til repository-roten
@@ -54,8 +55,6 @@ jobs:
             --exclude='.github/workflows/klargjor-repository.yml' \
             "$SOURCE_DIR/" ./
 
-          # Repositoryets eksisterende standardgren heter optituning-jobbstyring.
-          # La deploy-workflowen reagere bade pa denne og main dersom grenen endres senere.
           if [[ -f .github/workflows/deploy-cloudflare.yml ]]; then
             python3 - <<'PY'
           from pathlib import Path
@@ -71,7 +70,7 @@ jobs:
           PY
           fi
 
-          rm -f "$ZIP_FILE"
+          rm -f "$ZIP_FILE" .trigger-klargjor.txt .bootstrap-request.txt
           rm -rf .tmp-optituning
 
       - name: Kontroller at kjernefilene finnes
@@ -102,4 +101,4 @@ jobs:
           git config user.email "dalenholding@outlook.com"
           git add -A
           git commit -m "Pakk ut Optituning jobbstyring"
-          git push origin HEAD:optituning-jobbstyring
+          git push origin "HEAD:${TARGET_BRANCH}"
