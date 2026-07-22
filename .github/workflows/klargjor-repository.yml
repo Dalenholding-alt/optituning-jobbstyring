@@ -52,25 +52,10 @@ jobs:
 
           rsync -a \
             --exclude='.git/' \
-            --exclude='.github/workflows/klargjor-repository.yml' \
+            --exclude='.github/workflows/' \
             "$SOURCE_DIR/" ./
 
-          if [[ -f .github/workflows/deploy-cloudflare.yml ]]; then
-            python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.github/workflows/deploy-cloudflare.yml')
-          text = path.read_text(encoding='utf-8')
-          text = text.replace(
-              '    branches:\n      - main\n',
-              '    branches:\n      - main\n      - optituning-jobbstyring\n'
-          )
-          text = text.replace('uses: actions/checkout@v6', 'uses: actions/checkout@v4')
-          text = text.replace('uses: actions/setup-node@v6', 'uses: actions/setup-node@v4')
-          path.write_text(text, encoding='utf-8')
-          PY
-          fi
-
-          rm -f "$ZIP_FILE" .trigger-klargjor.txt .bootstrap-request.txt
+          rm -f "$ZIP_FILE" .trigger-klargjor.txt .bootstrap-request.txt .bootstrap-retry.txt
           rm -rf .tmp-optituning
 
       - name: Kontroller at kjernefilene finnes
@@ -85,7 +70,6 @@ jobs:
           test -f public/app.js
           test -f public/styles.css
           test -f migrations/0001_initial.sql
-          test -f .github/workflows/deploy-cloudflare.yml
 
       - name: Commit og push appfilene
         shell: bash
