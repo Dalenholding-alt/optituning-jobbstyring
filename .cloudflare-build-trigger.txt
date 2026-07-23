@@ -1,0 +1,2 @@
+Utløser ny Cloudflare-build etter retting av npm-register.
+Dato: 2026-07-23
